@@ -11,10 +11,7 @@ soup = BeautifulSoup(page, "html.parser")
 en_tete = ["Product Page URL", "UPC", "Title", "Price including tax", "Price excluding tax", "Number available",
            "Product description",
            "Category", "Review_rating", "Image URL"]
-## infos d'un livre
-info_book = [url]
-
-#récupération du titre du livre
+info_book = []
 
 # récupération du tableau des infos du livre
 info_tableau = []
@@ -22,7 +19,10 @@ product_table = soup.find("table", class_="table table-striped")
 product_table_headers = product_table.find_all("th")
 
 for header in product_table_headers:
-    if header.text == "UPC" or header.text == "Price (excl. tax)" or header.text == "Price (incl. tax)" or header.text == "Availability":
+    if header.text == "UPC" \
+    or header.text == "Price (excl. tax)" \
+    or header.text == "Price (incl. tax)" \
+    or header.text == "Availability":
         info_tableau.append(header.find_next('td').text)
 
 print ("les données du tableau: ",info_tableau)
@@ -37,5 +37,21 @@ product_main = soup.find (class_="col-sm-6 product_main")
 titre_livre = product_main.find("h1").text
 print("le titre du livre ouais: ", titre_livre)
 rating_livre = product_main.find_all()
-##Présentation données du livre
+print ("résultat du rating", rating_livre)
+
+#récupération catégorie du livre
+bandeau_livre = soup.find("ul", class_="breadcrumb").findAllNext
+print ("bandeau du livre : ",bandeau_livre)
+
+#Présentation données du livre
+info_book.append(url)
+info_book.append(info_tableau[0])
+info_book.append(titre_livre)
+info_book.append(info_tableau[1])
+info_book.append(info_tableau[2])
+info_book.append(info_tableau[3])
+info_book.append(description_livre)
+
 print ("les infos du livre: ", info_book)
+
+#chargement des données dans un fichier
