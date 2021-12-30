@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import csv
-import pandas as pd
+
 
 ## objet à manier
 url_site = "http://books.toscrape.com/"
@@ -36,17 +36,27 @@ description_livre = product_description.find("h2").find_next('p').text
 #récupération titre du livre et son rating
 product_main = soup.find (class_="col-sm-6 product_main")
 titre_livre = product_main.find("h1").text
-##print("le titre du livre ouais: ", titre_livre)
-rating_livre = product_main.find_all()
+rating_livre = product_main.find(class_="star-rating")
+
+#print ("le rating livre bis: ", rating_livre)
+
 
 #récupération catégorie du livre
-bandeau_livre = soup.find("ul", class_="breadcrumb").findAllNext
+categorie_livre = ""
+bandeau_livre = soup.find("ul", class_="breadcrumb")
+for ele in bandeau_livre:
+    if '<li> <a href="../category/books/sequential-art_5/index.html">Sequential Art</a> </li>' in ele:
+        print ("OUI IL Y A ")
+    else:
+        print ("nan ya pas !!!!!!!!!!!!!!!!")
+    print (ele)
+print("LA CATEGORIE DU LIVRE ",categorie_livre)
+
 
 #récupération de l'url de l'image
 image_source = soup.find(class_="item active").img['src']
 url_image = url_site + image_source[6:]
-print (image_source)
-print ("L'URL de l'image: ", url_image)
+#print ("L'URL de l'image: ", url_image)
 
 #Présentation données du livre
 info_book.append(url_book) # URL du livre
@@ -57,11 +67,19 @@ info_book.append(info_tableau[2]) # Prix tax incl du livre
 info_book.append(info_tableau[3]) # quantité dispo du livre
 info_book.append(description_livre) # description du livre
 
-print ("les infos du livre: ", info_book)
+print ("Les infos du livre du livre: ", info_book)
 
 #chargement des données dans un fichier
-book = pd.DataFrame([info_book], columns=en_tete)
-print ("Chargement des données du livre dans un fichier en cours ...")
-book.to_csv('resultatbook/book.csv', index=False, encoding='utf-8')
-print ("Terminé.")
+"""
+###with open('resultatbook/book.csv', 'w') as fichier_csv:
+    writer = csv.writer(fichier_csv, delimiter=',')
+    writer.writerow(en_tete)
+    print ("Chargement des données du livre dans un fichier en cours ...")
+    writer.writerow(info_book)
+    print ("Terminé.")
+"""
+#book = pd.DataFrame([info_book], columns=en_tete)
+#print ("Chargement des données du livre dans un fichier en cours ...")
+#book.to_csv('resultatbook/book.csv', index=False, encoding='utf-8')
+#print ("Terminé.")
 
