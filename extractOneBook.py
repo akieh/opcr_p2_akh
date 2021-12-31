@@ -7,12 +7,19 @@ import csv
 url_site = "http://books.toscrape.com/"
 url_book = "http://books.toscrape.com/catalogue/scott-pilgrims-precious-little-life-scott-pilgrim-1_987/index.html"
 url_category = "http://books.toscrape.com/catalogue/category/books/sequential-art_5/index.html"
-reponse = requests.get(url_book)
+"""reponse = requests.get(url_book)
 page = reponse.content
 soup = BeautifulSoup(page, "html.parser")
-
+"""
+def createSoup (url):
+    reponse = requests.get(url)
+    page = reponse.content
+    soup = BeautifulSoup(page, "html.parser")
+    return soup
 
 def getInfoBook (url):
+    print ("*************** GETINFO BOOK ********************")
+    soup = createSoup(url)
     info_book = []
     # récupération du tableau des infos du livre
     info_tableau = []
@@ -40,13 +47,14 @@ def getInfoBook (url):
     #récupération catégorie du livre
     categorie_livre = ""
     bandeau_livre = soup.find("ul", class_="breadcrumb")
-    for ele in bandeau_livre:
+    """for ele in bandeau_livre:
         if '<li> <a href="../category/books/sequential-art_5/index.html">Sequential Art</a> </li>' in ele:
             print ("OUI IL Y A ")
         else:
             print ("nan y'a pas")
         print (ele)
     print("LA CATEGORIE DU LIVRE ",categorie_livre)
+    """
 
 
     #récupération de l'url de l'image
@@ -68,7 +76,9 @@ def getInfoBook (url):
     return info_book
 
 def getUrlCategoryBooks (url):
-    ### 30/12/2021 18:14, il faut créer une fonction soup et changer le soup ici
+    print ("\n \n \n *************** GETURLCATEGORYBOOKS ******************** \n \n \n")
+
+    soup = createSoup(url)
     if soup.find(class_="next"):
         page_url = soup.find()
         print("there is a next")
@@ -84,7 +94,7 @@ def getUrlCategoryBooks (url):
     url_all_books = list(dict.fromkeys(url_all_books))
     for url_book in enumerate(url_all_books):
         print(url_book)
-    print ("rien")
+    print ("Extraction des URL fini")
 
 #chargement des données dans un fichier
 """
@@ -96,9 +106,11 @@ def getUrlCategoryBooks (url):
     print ("Terminé.")
 """
 
-getInfoBook(url_book)
+johnny = getInfoBook(url_book)
+getUrlCategoryBooks(url_category)
 
 def loadBooksCSV (info_book):
+    print ("\n \n \n *************** LOADING BOOKS INFO IN CSV ******************** \n \n \n")
     with open('resultatbook/book.csv', 'w') as fichier_csv:
         ## header pour le excel
         en_tete = ["Product Page URL", "UPC", "Title", "Price including tax", "Price excluding tax", "Number available",
@@ -111,11 +123,6 @@ def loadBooksCSV (info_book):
         writer.writerow(info_book)
         print("Terminé.")
 
-def createSoup (url):
-    reponse = requests.get(url)
-    page = reponse.content
-    soup = BeautifulSoup(page, "html.parser")
-    return soup
 
 
 
