@@ -80,8 +80,12 @@ def getUrlCategoryBooks (url):
 
     soup = createSoup(url)
     if soup.find(class_="next"):
-        page_url = soup.find()
-        print("there is a next")
+        page_url = soup.find(class_="next")
+        page_urll = page_url.find(href=True)
+        print("there is a next\n")
+        for ele in enumerate (url):
+            print (ele)
+        print ("l'URL",url[:68]+page_urll['href'] ,"\n\n\n")
     else:
         print("there is no next pages")
 
@@ -92,23 +96,13 @@ def getUrlCategoryBooks (url):
         url_all_books.append(url_site + "catalogue/" + url['href'][9:])
 
     url_all_books = list(dict.fromkeys(url_all_books))
-    for url_book in enumerate(url_all_books):
+    """for url_book in enumerate(url_all_books):
         print(url_book)
-    print ("Extraction des URL fini")
+    print ("Extraction des URL fini")"""
+
+    return url_all_books
 
 #chargement des données dans un fichier
-"""
-###with open('resultatbook/book.csv', 'w') as fichier_csv:
-    writer = csv.writer(fichier_csv, delimiter=',')
-    writer.writerow(en_tete)
-    print ("Chargement des données du livre dans un fichier en cours ...")
-    writer.writerow(info_book)
-    print ("Terminé.")
-"""
-
-johnny = getInfoBook(url_book)
-getUrlCategoryBooks(url_category)
-
 def loadBooksCSV (info_book):
     print ("\n \n \n *************** LOADING BOOKS INFO IN CSV ******************** \n \n \n")
     with open('resultatbook/book.csv', 'w') as fichier_csv:
@@ -123,11 +117,27 @@ def loadBooksCSV (info_book):
         writer.writerow(info_book)
         print("Terminé.")
 
+def getMultiplePageCategoryBooks (url):
+    print ("test")
 
+def getSinglePageCategoryBooks (url):
+    soup = createSoup(url)
+    table_books = soup.find("ol", class_="row")
+    url_all_books_category = table_books.find_all(href=True)
+    url_all_books = []
+    for url in url_all_books_category:
+        url_all_books.append(url_site + "catalogue/" + url['href'][9:])
 
+    url_all_books = list(dict.fromkeys(url_all_books))
+    """for url_book in enumerate(url_all_books):
+        print(url_book)
+    print ("Extraction des URL fini")"""
 
+    return url_all_books
 
+    print ("test")
 
+#loadBooksCSV(johnny)
+#johnny = getInfoBook(url_book)
 
-
-
+getUrlCategoryBooks(url_category)
