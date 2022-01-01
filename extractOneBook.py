@@ -103,24 +103,26 @@ def getUrlCategoryBooks (url):
     return url_all_books
 
 #chargement des données dans un fichier
-def loadBooksCSV (info_book):
-    print ("\n \n \n *************** LOADING BOOKS INFO IN CSV ******************** \n \n \n")
-    with open('resultatbook/book.csv', 'w') as fichier_csv:
-        ## header pour le excel
-        en_tete = ["Product Page URL", "UPC", "Title", "Price including tax", "Price excluding tax", "Number available",
-                   "Product description",
-                   ]
-        ## "Category", "Review_rating", "Image URL"] à ajouter après Product description
-        writer = csv.writer(fichier_csv, delimiter=',')
-        writer.writerow(en_tete)
-        print("Chargement des données du livre dans un fichier en cours ...")
-        writer.writerow(info_book)
-        print("Terminé.")
 
-def getMultiplePageCategoryBooks (url):
-    print ("test")
 
-def getSinglePageCategoryBooks (url):
+def get_multiple_url_pages (urlcategory):
+    print ("\n *************** TEST MULTIPLE URL PAGES ************ \n\n")
+    multiplepage_url = [urlcategory]
+    soup = createSoup(urlcategory)
+    while soup.find(class_="next"):
+        next_page_url = soup.find(class_="next").find(href=True)
+        new_page_url = urlcategory[:68]+next_page_url['href']
+        print ("La nouvelle page:", new_page_url)
+        multiplepage_url.append(new_page_url)
+        print (urlcategory[:68]+next_page_url['href'])
+        soup = createSoup(new_page_url)
+    print("\nPrésentation des url\n")
+    for url in multiplepage_url:
+        print (url)
+    print("\n *************** TEST FINI ************ \n\n")
+
+
+def get_single_page_categorybooks (url):
     soup = createSoup(url)
     table_books = soup.find("ol", class_="row")
     url_all_books_category = table_books.find_all(href=True)
@@ -137,7 +139,21 @@ def getSinglePageCategoryBooks (url):
 
     print ("test")
 
+def loadBooksCSV (info_book):
+    print ("\n \n \n *************** LOADING BOOKS INFO IN CSV ******************** \n \n \n")
+    with open('resultatbook/book.csv', 'w') as fichier_csv:
+        ## header pour le excel
+        en_tete = ["Product Page URL", "UPC", "Title", "Price including tax", "Price excluding tax", "Number available",
+                   "Product description",
+                   ]
+        ## "Category", "Review_rating", "Image URL"] à ajouter après Product description
+        writer = csv.writer(fichier_csv, delimiter=',')
+        writer.writerow(en_tete)
+        print("Chargement des données du livre dans un fichier en cours ...")
+        writer.writerow(info_book)
+        print("Terminé.")
+
 #loadBooksCSV(johnny)
 #johnny = getInfoBook(url_book)
 
-getUrlCategoryBooks(url_category)
+get_multiple_url_pages(url_category)
