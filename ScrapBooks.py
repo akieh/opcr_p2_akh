@@ -11,15 +11,15 @@ url_category = "http://books.toscrape.com/catalogue/category/books/sequential-ar
 page = reponse.content
 soup = BeautifulSoup(page, "html.parser")
 """
-def createSoup (url):
+def create_soup (url):
     reponse = requests.get(url)
     page = reponse.content
     soup = BeautifulSoup(page, "html.parser")
     return soup
 
-def getInfoBook (url):
+def get_info_book (url):
     print ("*************** GETINFO BOOK ********************")
-    soup = createSoup(url)
+    soup = create_soup(url)
     info_book = []
     # récupération du tableau des infos du livre
     info_tableau = []
@@ -75,71 +75,60 @@ def getInfoBook (url):
 
     return info_book
 
-def getUrlCategoryBooks (url):
-    print ("\n \n \n *************** GETURLCATEGORYBOOKS ******************** \n \n \n")
-
-    soup = createSoup(url)
+##Récupération des URL des livre d'une catégorie
+def get_url_category_books (url_liste):
+    print ("\n *************** Extraction DES URL DE CHAQUE LIVRES ******************** \n")
+    print (f"\n *************** Extraction de l'url {url_liste} ******************** \n")
+    url_pages = [url_liste]
+    url_category_books = []
+    multiple_url_pages = []
+    all_url_category_books = []
+    soup = create_soup(url_liste)
     if soup.find(class_="next"):
-        page_url = soup.find(class_="next")
-        page_urll = page_url.find(href=True)
-        print("there is a next\n")
-        for ele in enumerate (url):
-            print (ele)
-        print ("l'URL",url[:68]+page_urll['href'] ,"\n\n\n")
-    else:
-        print("there is no next pages")
+        multiple_url_pages = get_multiple_url_pages(url_liste)
+        #url_pages.append(multiple_url_pages)
+        #url_pages = list(dict.fromkeys(url_pages))
+        print ("URL des pages: ", multiple_url_pages ,"********\n\n")
+        #print ("Affichage url_pages[1][1]",url_pages[1][2])
+    for url in multiple_url_pages:
+        print ("Ca boucle ...")
+        all_url_category_books = get_single_page_category_books(url)
+        url_category_books.extend(all_url_category_books)
+    for ele in enumerate(url_category_books):
+        print (ele)
+    #print ("Voici le contenu de all_url_category_books:", url_category_books)
+    print ("\n *************** EXTRACTION DES URL DES LIVRES TERMINEE ************ \n")
 
-    table_books = soup.find("ol", class_="row")
-    url_all_books_category = table_books.find_all(href=True)
-    url_all_books = []
-    for url in url_all_books_category:
-        url_all_books.append(url_site + "catalogue/" + url['href'][9:])
-
-    url_all_books = list(dict.fromkeys(url_all_books))
-    """for url_book in enumerate(url_all_books):
-        print(url_book)
-    print ("Extraction des URL fini")"""
-
-    return url_all_books
-
-#chargement des données dans un fichier
-
+    return url_category_books
 
 def get_multiple_url_pages (urlcategory):
-    print ("\n *************** TEST MULTIPLE URL PAGES ************ \n\n")
+    print ("\n *************** RECUPERATION DE MULTIPLE URL PAGES ************ \n")
     multiplepage_url = [urlcategory]
-    soup = createSoup(urlcategory)
+    soup = create_soup(urlcategory)
     while soup.find(class_="next"):
         next_page_url = soup.find(class_="next").find(href=True)
         new_page_url = urlcategory[:68]+next_page_url['href']
-        print ("La nouvelle page:", new_page_url)
         multiplepage_url.append(new_page_url)
-        print (urlcategory[:68]+next_page_url['href'])
-        soup = createSoup(new_page_url)
-    print("\nPrésentation des url\n")
-    for url in multiplepage_url:
+        soup = create_soup(new_page_url)
+    for url in enumerate (multiplepage_url):
         print (url)
-    print("\n *************** TEST FINI ************ \n\n")
+    print("\n *************** RECUPERATION DES URL DE PLUSIEURS PAGES TERMINEE ************ \n")
+    return multiplepage_url
 
-
-def get_single_page_categorybooks (url):
-    soup = createSoup(url)
+def get_single_page_category_books (url):
+    print ("\n *************** RECUPERATION URL DES LIVRES ************ \n")
+    soup = create_soup(url)
     table_books = soup.find("ol", class_="row")
     url_all_books_category = table_books.find_all(href=True)
     url_all_books = []
     for url in url_all_books_category:
         url_all_books.append(url_site + "catalogue/" + url['href'][9:])
-
     url_all_books = list(dict.fromkeys(url_all_books))
-    """for url_book in enumerate(url_all_books):
-        print(url_book)
-    print ("Extraction des URL fini")"""
-
+    print ("Affichage URL des livres: ", url_all_books)
+    print ("\n *************** RECUPERATION URL DES LIVRES TERMINEE ************ \n")
     return url_all_books
 
-    print ("test")
-
-def loadBooksCSV (info_book):
+def load_books_csv (info_book):
     print ("\n \n \n *************** LOADING BOOKS INFO IN CSV ******************** \n \n \n")
     with open('resultatbook/book.csv', 'w') as fichier_csv:
         ## header pour le excel
@@ -154,6 +143,10 @@ def loadBooksCSV (info_book):
         print("Terminé.")
 
 #loadBooksCSV(johnny)
-#johnny = getInfoBook(url_book)
+#johnny = get_info_book (url_book)
 
-get_multiple_url_pages(url_category)
+#url_category = get_single_page_category_books(url_category)
+#print (url_category)
+#get_single_page_category_books(url_category)
+get_url_category_books(url_category)
+#get_multiple_url_pages(url_category)
