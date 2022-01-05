@@ -96,11 +96,12 @@ def get_url_category_books (url_liste):
         url_category_books.extend(all_url_category_books)
     for ele in enumerate(url_category_books):
         print (ele)
-    #print ("Voici le contenu de all_url_category_books:", url_category_books)
+    print ("Voici le contenu de all_url_category_books:", url_category_books)
     print ("\n *************** EXTRACTION DES URL DES LIVRES TERMINEE ************ \n")
 
     return url_category_books
 
+#Récupération des URL de plusieurs pages d'une catégorie
 def get_multiple_url_pages (urlcategory):
     print ("\n *************** RECUPERATION DE MULTIPLE URL PAGES ************ \n")
     multiplepage_url = [urlcategory]
@@ -148,5 +149,5 @@ def load_books_csv (info_book):
 #url_category = get_single_page_category_books(url_category)
 #print (url_category)
 #get_single_page_category_books(url_category)
-get_url_category_books(url_category)
-#get_multiple_url_pages(url_category)
+#get_url_category_books(url_category)
+get_multiple_url_pages(url_category)
