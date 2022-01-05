@@ -5,17 +5,19 @@ import csv
 ## objet à manier
 url_site = "http://books.toscrape.com/"
 url_book = "http://books.toscrape.com/catalogue/scott-pilgrims-precious-little-life-scott-pilgrim-1_987/index.html"
-url_category = "http://books.toscrape.com/catalogue/category/books/history_32/index.html"
+url_category = "http://books.toscrape.com/catalogue/category/books/novels_46/index.html"
 url_catalogue = "http://books.toscrape.com/catalogue/category/books/"
 
+#Création d'un objet soup
 def create_soup (url):
     reponse = requests.get(url)
     page = reponse.content
     soup = BeautifulSoup(page, "html.parser")
     return soup
 
+#Récupération des infos d'un livre
 def get_info_book (url):
-    print ("*************** GETINFO BOOK ********************")
+    print ("\n*************** Récupération des infos du livre en paramètre ********************\n")
     soup = create_soup(url)
     info_book = []
     # récupération du tableau des infos du livre
@@ -37,7 +39,7 @@ def get_info_book (url):
     product_main = soup.find (class_="col-sm-6 product_main")
     titre_livre = product_main.find("h1").text
     rating_livre = product_main.find(class_="star-rating")
-    print ("!!!!!!!!!!!" ,rating_livre)
+    #print ("!!!!!!!!!!!" ,rating_livre)
 
     #print ("le rating livre bis: ", rating_livre)
 
@@ -60,7 +62,7 @@ def get_info_book (url):
     #print ("L'URL de l'image: ", url_image)
 
     #Présentation données du livre
-    info_book.append(url_book) # URL du livre
+    info_book.append(url) # URL du livre
     info_book.append(info_tableau[0]) # UPC du livre
     info_book.append(titre_livre) # titre du livre
     info_book.append(info_tableau[1]) # Prix tax excl du livre
@@ -68,7 +70,7 @@ def get_info_book (url):
     info_book.append(info_tableau[3]) # quantité dispo du livre
     info_book.append(description_livre) # description du livre
 
-    print("Les infos du livre dans la fonction: ", info_book)
+    print("\n*************** Fin de récupération des infos du livre ********************\n")
 
     return info_book
 
@@ -76,7 +78,7 @@ def get_info_book (url):
 def get_url_category_books (url_liste):
     print ("\n *************** Extraction DES URL DE CHAQUE LIVRES ******************** \n")
     print (f"\n *************** Extraction de l'url {url_liste} ******************** \n")
-    url_pages = [url_liste]
+    #url_pages = [url_liste]
     url_category_books = []
     multiple_url_pages = []
     all_url_category_books = []
@@ -119,6 +121,7 @@ def get_multiple_url_pages (urlcategory):
     print("\n *************** RECUPERATION DES URL DE PLUSIEURS PAGES TERMINEE ************ \n")
     return multiplepage_url
 
+#Récupération des URL des livres d'une page
 def get_single_page_category_books (url):
     print ("\n *************** RECUPERATION URL DES LIVRES ************ \n")
     soup = create_soup(url)
@@ -132,6 +135,7 @@ def get_single_page_category_books (url):
     print ("\n *************** RECUPERATION URL DES LIVRES TERMINEE ************ \n")
     return url_all_books
 
+#Chargement dans un fichier CSV des informations d'un livre
 def load_books_csv (info_book):
     print ("\n \n \n *************** LOADING BOOKS INFO IN CSV ******************** \n \n \n")
     with open('resultatbook/book.csv', 'w') as fichier_csv:
@@ -146,11 +150,36 @@ def load_books_csv (info_book):
         writer.writerow(info_book)
         print("Terminé.")
 
+#Récupération des infos de tous les livres d'une catégorie
+def get_category_info_books (url_liste):
+    print ("\n *************** Extraction des infos de tous les livres d'une catégorie ******************** \n")
+    info_category_books = []
+    for url in url_liste:
+        print ("Ca boucle pour récupérer les infos d'un livre...")
+        new_book = get_info_book(url)
+        info_category_books.append(new_book)
+    print ("\n *************** Extraction des infos de tous les livres d'une catégorie ******************** \n")
+
+    for info in enumerate(info_category_books):
+        print (info)
+
+    return info_category_books
+
 #loadBooksCSV(johnny)
 #johnny = get_info_book (url_book)
 
 #url_category = get_single_page_category_books(url_category)
 #print (url_category)
 #get_single_page_category_books(url_category)
-get_url_category_books(url_category)
+print ("Démarrage du programme ...")
+liste_url_books = get_url_category_books(url_category)
+get_category_info_books(liste_url_books)
+print ("Fin du programme.")
+
+"""print ("Le premier livre: ", liste_url_books[0])
+print ("Le sixième livre: ", liste_url_books[5])
+print ("Le onzième livre: ", liste_url_books[10])
+print ("Le trentième livre: ", liste_url_books[29])
+print ("Le dernier livre: ", liste_url_books[74])"""
+
 #get_multiple_url_pages(url_category)
