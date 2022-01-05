@@ -2,15 +2,12 @@ import requests
 from bs4 import BeautifulSoup
 import csv
 
-
 ## objet à manier
 url_site = "http://books.toscrape.com/"
 url_book = "http://books.toscrape.com/catalogue/scott-pilgrims-precious-little-life-scott-pilgrim-1_987/index.html"
-url_category = "http://books.toscrape.com/catalogue/category/books/sequential-art_5/index.html"
-"""reponse = requests.get(url_book)
-page = reponse.content
-soup = BeautifulSoup(page, "html.parser")
-"""
+url_category = "http://books.toscrape.com/catalogue/category/books/history_32/index.html"
+url_catalogue = "http://books.toscrape.com/catalogue/category/books/"
+
 def create_soup (url):
     reponse = requests.get(url)
     page = reponse.content
@@ -90,6 +87,10 @@ def get_url_category_books (url_liste):
         #url_pages = list(dict.fromkeys(url_pages))
         print ("URL des pages: ", multiple_url_pages ,"********\n\n")
         #print ("Affichage url_pages[1][1]",url_pages[1][2])
+    print ("Le contenu de multiple_url_pages: ", multiple_url_pages)
+    if len(multiple_url_pages) == 0:
+        multiple_url_pages.append(url_liste)
+    print ("Le contenu de multiple_url_pages: ", multiple_url_pages)
     for url in multiple_url_pages:
         print ("Ca boucle ...")
         all_url_category_books = get_single_page_category_books(url)
@@ -106,9 +107,11 @@ def get_multiple_url_pages (urlcategory):
     print ("\n *************** RECUPERATION DE MULTIPLE URL PAGES ************ \n")
     multiplepage_url = [urlcategory]
     soup = create_soup(urlcategory)
+    url_category_splitted = url_category.split("/")
     while soup.find(class_="next"):
         next_page_url = soup.find(class_="next").find(href=True)
-        new_page_url = urlcategory[:68]+next_page_url['href']
+        #new_page_url = urlcategory[:68]+next_page_url['href']
+        new_page_url = urlcategory[:51] + url_category_splitted[-2]+ "/" + next_page_url['href']
         multiplepage_url.append(new_page_url)
         soup = create_soup(new_page_url)
     for url in enumerate (multiplepage_url):
@@ -149,5 +152,5 @@ def load_books_csv (info_book):
 #url_category = get_single_page_category_books(url_category)
 #print (url_category)
 #get_single_page_category_books(url_category)
-#get_url_category_books(url_category)
-get_multiple_url_pages(url_category)
+get_url_category_books(url_category)
+#get_multiple_url_pages(url_category)
