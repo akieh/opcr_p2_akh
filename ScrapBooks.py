@@ -4,8 +4,9 @@ import csv
 
 ## objet à manier
 url_site = "http://books.toscrape.com/"
-url_book = "http://books.toscrape.com/catalogue/scott-pilgrims-precious-little-life-scott-pilgrim-1_987/index.html"
-url_category = "http://books.toscrape.com/catalogue/category/books/novels_46/index.html"
+url_book = "http://books.toscrape.com/catalogue/robin-war_730/index.html"
+url_book2 = "http://books.toscrape.com/catalogue/so-cute-it-hurts-vol-6-so-cute-it-hurts-6_734/index.html"
+url_category = "http://books.toscrape.com/catalogue/category/books/fiction_10/index.html"
 url_catalogue = "http://books.toscrape.com/catalogue/category/books/"
 
 #Création d'un objet soup
@@ -17,7 +18,7 @@ def create_soup (url):
 
 #Récupération des infos d'un livre
 def get_info_book (url):
-    print ("\n*************** Récupération des infos du livre en paramètre ********************\n")
+    #print ("\n*************** Récupération des infos du livre en paramètre ********************\n")
     soup = create_soup(url)
     info_book = []
     # récupération du tableau des infos du livre
@@ -65,12 +66,17 @@ def get_info_book (url):
     info_book.append(url) # URL du livre
     info_book.append(info_tableau[0]) # UPC du livre
     info_book.append(titre_livre) # titre du livre
+    """ prix_tax_e = info_tableau[1]
+    print ("Le prix tax exclu : ",prix_tax_e)
+    print (type(prix_tax_e))
+    prix_tax_e = prix_tax_e.replace('£',' ')
+    print ("Le prix tax exclu : ",prix_tax_e)"""
     info_book.append(info_tableau[1]) # Prix tax excl du livre
     info_book.append(info_tableau[2]) # Prix tax incl du livre
     info_book.append(info_tableau[3]) # quantité dispo du livre
     info_book.append(description_livre) # description du livre
 
-    print("\n*************** Fin de récupération des infos du livre ********************\n")
+    #print("\n*************** Fin de récupération des infos du livre ********************\n")
 
     return info_book
 
@@ -93,8 +99,8 @@ def get_url_category_books (url_liste):
     if len(multiple_url_pages) == 0:
         multiple_url_pages.append(url_liste)
     print ("Le contenu de multiple_url_pages: ", multiple_url_pages)
+    print("Ca boucle pour récupérer les url de tous les livres ...")
     for url in multiple_url_pages:
-        print ("Ca boucle ...")
         all_url_category_books = get_single_page_category_books(url)
         url_category_books.extend(all_url_category_books)
     for ele in enumerate(url_category_books):
@@ -136,7 +142,16 @@ def get_single_page_category_books (url):
     return url_all_books
 
 #Chargement dans un fichier CSV des informations d'un livre
-def load_books_csv (info_book):
+def load_book_csv (info_book):
+    print ("\n \n \n *************** Ecriture des infos du livre dans le fichier CSV ******************** \n \n \n")
+    with open('resultatbook/book.csv', 'a',encoding="utf-8") as fichier_csv:
+
+        print("Chargement des données du livre dans un fichier en cours ...")
+        writer = csv.writer(fichier_csv, delimiter=',')
+        writer.writerow(info_book)
+        print("Ecriture des données du livre terminée.")
+
+def one_load_book_csv (info_book):
     print ("\n \n \n *************** LOADING BOOKS INFO IN CSV ******************** \n \n \n")
     with open('resultatbook/book.csv', 'w') as fichier_csv:
         ## header pour le excel
@@ -150,19 +165,36 @@ def load_books_csv (info_book):
         writer.writerow(info_book)
         print("Terminé.")
 
+def load_multiple_books (list_books):
+    print ("\n *************** Ecriture de tous livres d'une catégorie ******************** \n")
+    fichier_csv = open('resultatbook/book.csv','w')
+    ## header pour le excel
+    en_tete = ["Product Page URL", "UPC", "Title", "Price including tax", "Price excluding tax", "Number available",
+               "Product description",
+               ]
+    ## "Category", "Review_rating", "Image URL"] à ajouter après Product description
+    writer = csv.writer(fichier_csv, delimiter=',')
+    writer.writerow(en_tete)
+    for book in (list_books):
+        print("Chargement des données du livre dans un fichier en cours ...")
+        writer = csv.writer(fichier_csv, delimiter=',')
+        writer.writerow(book)
+        print("Ecriture des données du livre terminée.")
+    print ("\n *************** Ecriture de tous livres d'une catégorie terminée ! ******************** \n")
+
 #Récupération des infos de tous les livres d'une catégorie
 def get_category_info_books (url_liste):
     print ("\n *************** Extraction des infos de tous les livres d'une catégorie ******************** \n")
     info_category_books = []
     for url in url_liste:
-        print ("Ca boucle pour récupérer les infos d'un livre...")
+        print("Ca boucle pour récupérer les infos d'un livre...")
         new_book = get_info_book(url)
         info_category_books.append(new_book)
-    print ("\n *************** Extraction des infos de tous les livres d'une catégorie ******************** \n")
+        #one_load_book_csv(new_book)
+    print ("\n *************** Extraction des infos de tous les livres d'une catégorie TERMINEE ******************** \n")
 
-    for info in enumerate(info_category_books):
+    for info in (info_category_books):
         print (info)
-
     return info_category_books
 
 #loadBooksCSV(johnny)
@@ -172,14 +204,9 @@ def get_category_info_books (url_liste):
 #print (url_category)
 #get_single_page_category_books(url_category)
 print ("Démarrage du programme ...")
-liste_url_books = get_url_category_books(url_category)
-get_category_info_books(liste_url_books)
+book = get_info_book(url_book2)
+one_load_book_csv(book)
+"""liste_url_books = get_url_category_books(url_category)
+info_category_books = get_category_info_books(liste_url_books)
+load_multiple_books(info_category_books)"""
 print ("Fin du programme.")
-
-"""print ("Le premier livre: ", liste_url_books[0])
-print ("Le sixième livre: ", liste_url_books[5])
-print ("Le onzième livre: ", liste_url_books[10])
-print ("Le trentième livre: ", liste_url_books[29])
-print ("Le dernier livre: ", liste_url_books[74])"""
-
-#get_multiple_url_pages(url_category)
