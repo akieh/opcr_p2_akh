@@ -6,7 +6,7 @@ import csv
 url_site = "http://books.toscrape.com/"
 url_book = "http://books.toscrape.com/catalogue/robin-war_730/index.html"
 url_book2 = "http://books.toscrape.com/catalogue/so-cute-it-hurts-vol-6-so-cute-it-hurts-6_734/index.html"
-url_category = "http://books.toscrape.com/catalogue/category/books/fiction_10/index.html"
+url_category = "http://books.toscrape.com/catalogue/category/books/sequential-art_5/index.html"
 url_catalogue = "http://books.toscrape.com/catalogue/category/books/"
 
 #Création d'un objet soup
@@ -84,10 +84,8 @@ def get_info_book (url):
 def get_url_category_books (url_liste):
     print ("\n *************** Extraction DES URL DE CHAQUE LIVRES ******************** \n")
     print (f"\n *************** Extraction de l'url {url_liste} ******************** \n")
-    #url_pages = [url_liste]
     url_category_books = []
     multiple_url_pages = []
-    all_url_category_books = []
     soup = create_soup(url_liste)
     if soup.find(class_="next"):
         multiple_url_pages = get_multiple_url_pages(url_liste)
@@ -101,8 +99,10 @@ def get_url_category_books (url_liste):
     print ("Le contenu de multiple_url_pages: ", multiple_url_pages)
     print("Ca boucle pour récupérer les url de tous les livres ...")
     for url in multiple_url_pages:
-        all_url_category_books = get_single_page_category_books(url)
-        url_category_books.extend(all_url_category_books)
+        url_category_books.extend(get_single_page_category_books(url))
+        """all_url_category_books = get_single_page_category_books(url)
+        url_category_books.extend(all_url_category_books)"""
+    print ("Boucle terminée !")
     for ele in enumerate(url_category_books):
         print (ele)
     print ("Voici le contenu de all_url_category_books:", url_category_books)
@@ -133,13 +133,27 @@ def get_single_page_category_books (url):
     soup = create_soup(url)
     table_books = soup.find("ol", class_="row")
     url_all_books_category = table_books.find_all(href=True)
+    name_category = soup.find(class_="page-header action").text
+    print ("Nom de la categorie: ",name_category)
     url_all_books = []
     for url in url_all_books_category:
         url_all_books.append(url_site + "catalogue/" + url['href'][9:])
     url_all_books = list(dict.fromkeys(url_all_books))
     print ("Affichage URL des livres: ", url_all_books)
     print ("\n *************** RECUPERATION URL DES LIVRES TERMINEE ************ \n")
-    return url_all_books
+    return url_all_books, name_category
+
+def get_links_categories (url_site):
+    links_categories = []
+    soup = create_soup (url_site)
+    table_categories = soup.find ("ul", class_="nav nav-list")
+    url_categories = table_categories.find_all(href=True)
+    url_categories.pop(0)
+    for url in url_categories:
+        links_categories.append(url_site+ url['href'])
+    for url in enumerate (links_categories):
+        print (url)
+    return links_categories
 
 #Chargement dans un fichier CSV des informations d'un livre
 def load_book_csv (info_book):
@@ -167,7 +181,7 @@ def one_load_book_csv (info_book):
 
 def load_multiple_books (list_books):
     print ("\n *************** Ecriture de tous livres d'une catégorie ******************** \n")
-    fichier_csv = open('resultatbook/book.csv','w')
+    fichier_csv = open('resultatbook/book.csv','w', encoding="utf-8")
     ## header pour le excel
     en_tete = ["Product Page URL", "UPC", "Title", "Price including tax", "Price excluding tax", "Number available",
                "Product description",
@@ -180,6 +194,7 @@ def load_multiple_books (list_books):
         writer = csv.writer(fichier_csv, delimiter=',')
         writer.writerow(book)
         print("Ecriture des données du livre terminée.")
+
     print ("\n *************** Ecriture de tous livres d'une catégorie terminée ! ******************** \n")
 
 #Récupération des infos de tous les livres d'une catégorie
@@ -197,6 +212,12 @@ def get_category_info_books (url_liste):
         print (info)
     return info_category_books
 
+def etl():
+    print ("Démarrage du programme : ETL de tous les livres du site")
+
+    print ("Fin du programme : Tous les livres ont été chargés en CSV !")
+
+
 #loadBooksCSV(johnny)
 #johnny = get_info_book (url_book)
 
@@ -204,9 +225,16 @@ def get_category_info_books (url_liste):
 #print (url_category)
 #get_single_page_category_books(url_category)
 print ("Démarrage du programme ...")
-book = get_info_book(url_book2)
-one_load_book_csv(book)
-"""liste_url_books = get_url_category_books(url_category)
-info_category_books = get_category_info_books(liste_url_books)
-load_multiple_books(info_category_books)"""
+"""jacques = get_url_category_books(url_category)
+mini = get_category_info_books(jacques)
+load_multiple_books(mini)"""
+"""book = get_info_book(url_book2)
+one_load_book_csv(book)"""
+
+urlaavoir, joseph = get_single_page_category_books(url_category)
+
+print ("Voici Joseph", joseph)
+
+#get_links_categories(url_site)
+
 print ("Fin du programme.")
