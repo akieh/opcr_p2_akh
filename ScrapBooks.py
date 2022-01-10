@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import csv
+import time
 
 ## objet à manier
 url_site = "http://books.toscrape.com/"
@@ -34,7 +35,11 @@ def get_info_book (url):
 
     #récupération de la description du produit dans le tableau
     product_description = soup.find(id="product_description")
-    description_livre = product_description.find("h2").find_next('p').text
+    #print ("Le Product description : ", product_description, "Son type: ", type(product_description))
+    if product_description is None:
+        description_livre = "Pas de description disponible"
+    else:
+        description_livre = product_description.find("h2").find_next('p').text
 
     #récupération titre du livre et son rating
     product_main = soup.find (class_="col-sm-6 product_main")
@@ -66,11 +71,6 @@ def get_info_book (url):
     info_book.append(url) # URL du livre
     info_book.append(info_tableau[0]) # UPC du livre
     info_book.append(titre_livre) # titre du livre
-    """ prix_tax_e = info_tableau[1]
-    print ("Le prix tax exclu : ",prix_tax_e)
-    print (type(prix_tax_e))
-    prix_tax_e = prix_tax_e.replace('£',' ')
-    print ("Le prix tax exclu : ",prix_tax_e)"""
     info_book.append(info_tableau[1]) # Prix tax excl du livre
     info_book.append(info_tableau[2]) # Prix tax incl du livre
     info_book.append(info_tableau[3]) # quantité dispo du livre
@@ -87,6 +87,9 @@ def get_url_category_books (url_liste):
     url_category_books = []
     multiple_url_pages = []
     soup = create_soup(url_liste)
+    name_category = soup.find(class_="page-header action")
+    name_category = name_category.find("h1").text
+    print ("Nom de la categorie: ",name_category)
     if soup.find(class_="next"):
         multiple_url_pages = get_multiple_url_pages(url_liste)
         #url_pages.append(multiple_url_pages)
@@ -108,7 +111,7 @@ def get_url_category_books (url_liste):
     print ("Voici le contenu de all_url_category_books:", url_category_books)
     print ("\n *************** EXTRACTION DES URL DES LIVRES TERMINEE ************ \n")
 
-    return url_category_books
+    return url_category_books, name_category
 
 #Récupération des URL de plusieurs pages d'une catégorie
 def get_multiple_url_pages (urlcategory):
@@ -133,15 +136,13 @@ def get_single_page_category_books (url):
     soup = create_soup(url)
     table_books = soup.find("ol", class_="row")
     url_all_books_category = table_books.find_all(href=True)
-    name_category = soup.find(class_="page-header action").text
-    print ("Nom de la categorie: ",name_category)
     url_all_books = []
     for url in url_all_books_category:
         url_all_books.append(url_site + "catalogue/" + url['href'][9:])
     url_all_books = list(dict.fromkeys(url_all_books))
     print ("Affichage URL des livres: ", url_all_books)
     print ("\n *************** RECUPERATION URL DES LIVRES TERMINEE ************ \n")
-    return url_all_books, name_category
+    return url_all_books
 
 def get_links_categories (url_site):
     links_categories = []
@@ -179,9 +180,9 @@ def one_load_book_csv (info_book):
         writer.writerow(info_book)
         print("Terminé.")
 
-def load_multiple_books (list_books):
+def load_multiple_books (list_books, name_category):
     print ("\n *************** Ecriture de tous livres d'une catégorie ******************** \n")
-    fichier_csv = open('resultatbook/book.csv','w', encoding="utf-8")
+    fichier_csv = open('resultatbook/' + str(name_category)+'.csv','w', encoding="utf-8")
     ## header pour le excel
     en_tete = ["Product Page URL", "UPC", "Title", "Price including tax", "Price excluding tax", "Number available",
                "Product description",
@@ -214,7 +215,12 @@ def get_category_info_books (url_liste):
 
 def etl():
     print ("Démarrage du programme : ETL de tous les livres du site")
+    links_categories = get_links_categories(url_site);
 
+    for link in links_categories:
+        list_url, name_category = get_url_category_books(link)
+        list_books = get_category_info_books(list_url)
+        load_multiple_books(list_books, name_category)
     print ("Fin du programme : Tous les livres ont été chargés en CSV !")
 
 
@@ -225,15 +231,17 @@ def etl():
 #print (url_category)
 #get_single_page_category_books(url_category)
 print ("Démarrage du programme ...")
-"""jacques = get_url_category_books(url_category)
-mini = get_category_info_books(jacques)
-load_multiple_books(mini)"""
+start_time = time.time()
+print("--- %s seconds ---" % (time.time() - start_time))
+etl()
+
+#get_info_book("http://books.toscrape.com/catalogue/alice-in-wonderland-alices-adventures-in-wonderland-1_5/index.html")
+
+"""liste_url, name_category = get_url_category_books("http://books.toscrape.com/catalogue/category/books/classics_6/index.html")
+list_books = get_category_info_books(liste_url)"""
+
 """book = get_info_book(url_book2)
 one_load_book_csv(book)"""
-
-urlaavoir, joseph = get_single_page_category_books(url_category)
-
-print ("Voici Joseph", joseph)
 
 #get_links_categories(url_site)
 
