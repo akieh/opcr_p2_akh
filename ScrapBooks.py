@@ -2,10 +2,12 @@ import requests
 from bs4 import BeautifulSoup
 import csv
 import time
+import urllib.request
 
 ## objet à manier
 url_site = "http://books.toscrape.com/"
-url_book = "http://books.toscrape.com/catalogue/robin-war_730/index.html"
+url_book = "http://books.toscrape.com/catalogue/scott-pilgrims-precious-little-life-scott-pilgrim-1_987/index.html"
+url_book3 = "http://books.toscrape.com/catalogue/robin-war_730/index.html"
 url_book2 = "http://books.toscrape.com/catalogue/so-cute-it-hurts-vol-6-so-cute-it-hurts-6_734/index.html"
 url_category = "http://books.toscrape.com/catalogue/category/books/sequential-art_5/index.html"
 url_catalogue = "http://books.toscrape.com/catalogue/category/books/"
@@ -45,28 +47,40 @@ def get_info_book (url):
     product_main = soup.find (class_="col-sm-6 product_main")
     titre_livre = product_main.find("h1").text
     rating_livre = product_main.find(class_="star-rating")
-    #print ("!!!!!!!!!!!" ,rating_livre)
+    print ("Type de Rating:", type(rating_livre))
+    print ("La taille du rating:", len(rating_livre))
+    leratingdict = rating_livre.attrs['class']
+    rating = leratingdict[-1]
+    if rating == "Five":
+        rating = "5/5"
+    elif rating == "Four":
+        rating = "4/5"
+    elif rating == "Three":
+        rating = "3/5"
+    elif rating == "Two":
+        rating = "2/5"
+    else:
+        rating == "1/5"
+    print ("Le type de lerating:", type(leratingdict))
+    print("Contenu de leratingdict", leratingdict)
+    print ("Contenu de rating:",rating)
+    print ("Type de rating,",type(rating))
 
-    #print ("le rating livre bis: ", rating_livre)
+    """ You can specify a string to be used to join the bits of text together:
+
+     soup.get_text("|")
+    'I linked to |example.com|'"""
 
     #récupération catégorie du livre
-    categorie_livre = ""
-    bandeau_livre = soup.find("ul", class_="breadcrumb")
-    """for ele in bandeau_livre:
-        if '<li> <a href="../category/books/sequential-art_5/index.html">Sequential Art</a> </li>' in ele:
-            print ("OUI IL Y A ")
-        else:
-            print ("nan y'a pas")
-        print (ele)
-    print("LA CATEGORIE DU LIVRE ",categorie_livre)
-    """
-
+    categorie_livre = soup.find("li", class_="active").find_previous().text
 
     #récupération de l'url de l'image
     image_source = soup.find(class_="item active").img['src']
     url_image = url_site + image_source[6:]
     #print ("L'URL de l'image: ", url_image)
 
+    #téléchargement de l'image
+    urllib.request.urlretrieve(url_image, "scott.jpg") # CHECKER CA BIEN !!!!!!!!!!!!
     #Présentation données du livre
     info_book.append(url) # URL du livre
     info_book.append(info_tableau[0]) # UPC du livre
@@ -221,6 +235,7 @@ def etl():
         list_url, name_category = get_url_category_books(link)
         list_books = get_category_info_books(list_url)
         load_multiple_books(list_books, name_category)
+
     print ("Fin du programme : Tous les livres ont été chargés en CSV !")
 
 
@@ -233,7 +248,8 @@ def etl():
 print ("Démarrage du programme ...")
 start_time = time.time()
 print("--- %s seconds ---" % (time.time() - start_time))
-etl()
+get_info_book(url_book)
+#etl()
 
 #get_info_book("http://books.toscrape.com/catalogue/alice-in-wonderland-alices-adventures-in-wonderland-1_5/index.html")
 
