@@ -1,3 +1,5 @@
+import os
+
 import requests
 from bs4 import BeautifulSoup
 import csv
@@ -37,7 +39,6 @@ def get_info_book (url):
 
     #récupération de la description du produit dans le tableau
     product_description = soup.find(id="product_description")
-    #print ("Le Product description : ", product_description, "Son type: ", type(product_description))
     if product_description is None:
         description_livre = "Pas de description disponible"
     else:
@@ -46,10 +47,10 @@ def get_info_book (url):
     #récupération titre du livre et son rating
     product_main = soup.find (class_="col-sm-6 product_main")
     titre_livre = product_main.find("h1").text
-    rating_livre = product_main.find(class_="star-rating")
-    print ("Type de Rating:", type(rating_livre))
-    print ("La taille du rating:", len(rating_livre))
-    leratingdict = rating_livre.attrs['class']
+    rating_class = product_main.find(class_="star-rating")
+    print ("Type de Rating:", type(rating_class))
+    print ("La taille du rating:", len(rating_class))
+    leratingdict = rating_class.attrs['class']
     rating = leratingdict[-1]
     if rating == "Five":
         rating = "5/5"
@@ -61,15 +62,10 @@ def get_info_book (url):
         rating = "2/5"
     else:
         rating == "1/5"
-    print ("Le type de lerating:", type(leratingdict))
+    """ print ("Le type de lerating:", type(leratingdict))
     print("Contenu de leratingdict", leratingdict)
     print ("Contenu de rating:",rating)
-    print ("Type de rating,",type(rating))
-
-    """ You can specify a string to be used to join the bits of text together:
-
-     soup.get_text("|")
-    'I linked to |example.com|'"""
+    print ("Type de rating,",type(rating))"""
 
     #récupération catégorie du livre
     categorie_livre = soup.find("li", class_="active").find_previous().text
@@ -80,7 +76,7 @@ def get_info_book (url):
     #print ("L'URL de l'image: ", url_image)
 
     #téléchargement de l'image
-    urllib.request.urlretrieve(url_image, "scott.jpg") # CHECKER CA BIEN !!!!!!!!!!!!
+    #urllib.request.urlretrieve(url_image, r'imageslivres/georges.jpg') # CHECKER CA BIEN !!!!!!!!!!!!
     #Présentation données du livre
     info_book.append(url) # URL du livre
     info_book.append(info_tableau[0]) # UPC du livre
@@ -90,6 +86,9 @@ def get_info_book (url):
     info_book.append(info_tableau[3]) # quantité dispo du livre
     info_book.append(description_livre) # description du livre
 
+    print ("extraction du livre ",titre_livre," terminée !")
+    titre_livre = titre_livre.replace(":"," ").replace("/"," ").replace('\''," ").replace('"'," ")
+    urllib.request.urlretrieve(url_image, r'imagesbooks/'+str(titre_livre)+".jpg") # CHECKER CA BIEN !!!!!!!!!!!!
     #print("\n*************** Fin de récupération des infos du livre ********************\n")
 
     return info_book
@@ -117,8 +116,6 @@ def get_url_category_books (url_liste):
     print("Ca boucle pour récupérer les url de tous les livres ...")
     for url in multiple_url_pages:
         url_category_books.extend(get_single_page_category_books(url))
-        """all_url_category_books = get_single_page_category_books(url)
-        url_category_books.extend(all_url_category_books)"""
     print ("Boucle terminée !")
     for ele in enumerate(url_category_books):
         print (ele)
@@ -173,7 +170,7 @@ def get_links_categories (url_site):
 #Chargement dans un fichier CSV des informations d'un livre
 def load_book_csv (info_book):
     print ("\n \n \n *************** Ecriture des infos du livre dans le fichier CSV ******************** \n \n \n")
-    with open('resultatbook/book.csv', 'a',encoding="utf-8") as fichier_csv:
+    with open('csvbooks/book.csv', 'a',encoding="utf-8") as fichier_csv:
 
         print("Chargement des données du livre dans un fichier en cours ...")
         writer = csv.writer(fichier_csv, delimiter=',')
@@ -182,7 +179,7 @@ def load_book_csv (info_book):
 
 def one_load_book_csv (info_book):
     print ("\n \n \n *************** LOADING BOOKS INFO IN CSV ******************** \n \n \n")
-    with open('resultatbook/book.csv', 'w') as fichier_csv:
+    with open('csvbooks/book.csv', 'w') as fichier_csv:
         ## header pour le excel
         en_tete = ["Product Page URL", "UPC", "Title", "Price including tax", "Price excluding tax", "Number available",
                    "Product description",
@@ -196,7 +193,7 @@ def one_load_book_csv (info_book):
 
 def load_multiple_books (list_books, name_category):
     print ("\n *************** Ecriture de tous livres d'une catégorie ******************** \n")
-    fichier_csv = open('resultatbook/' + str(name_category)+'.csv','w', encoding="utf-8")
+    fichier_csv = open('csvbooks/' + str(name_category)+'.csv','w', encoding="utf-8")
     ## header pour le excel
     en_tete = ["Product Page URL", "UPC", "Title", "Price including tax", "Price excluding tax", "Number available",
                "Product description",
@@ -227,8 +224,23 @@ def get_category_info_books (url_liste):
         print (info)
     return info_category_books
 
+#Creation des repertoires pour les images et les CSV
+def createDirectories ():
+    print ("Creation des dossiers 'imagesbooks' et 'csvbooks'")
+    if not os.path.exists("imagesbooks"):
+        os.mkdir("imagesbooks")
+        print ("Le repetoire 'imagesbooks' a été créé.")
+    else:
+        print ("Le reportoire 'imagesbooks' existe déjà.")
+    if not os.path.exists("csvbooks"):
+        os.mkdir("csvbooks")
+        print("Le repetoire 'csvbooks' a été créé.")
+    else:
+        print("Le reportoire 'csvbooks' existe déjà.")
+
 def etl():
     print ("Démarrage du programme : ETL de tous les livres du site")
+    createDirectories()
     links_categories = get_links_categories(url_site);
 
     for link in links_categories:
@@ -248,17 +260,5 @@ def etl():
 print ("Démarrage du programme ...")
 start_time = time.time()
 print("--- %s seconds ---" % (time.time() - start_time))
-get_info_book(url_book)
-#etl()
-
-#get_info_book("http://books.toscrape.com/catalogue/alice-in-wonderland-alices-adventures-in-wonderland-1_5/index.html")
-
-"""liste_url, name_category = get_url_category_books("http://books.toscrape.com/catalogue/category/books/classics_6/index.html")
-list_books = get_category_info_books(liste_url)"""
-
-"""book = get_info_book(url_book2)
-one_load_book_csv(book)"""
-
-#get_links_categories(url_site)
-
+etl()
 print ("Fin du programme.")
