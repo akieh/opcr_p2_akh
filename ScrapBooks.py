@@ -1,25 +1,51 @@
 import os
+import sys
 
 import requests
-from bs4 import BeautifulSoup
 import csv
 import time
 import urllib.request
+import string
+
+from bs4 import BeautifulSoup
 
 ## objet à manier
 url_site = "http://books.toscrape.com/"
-url_book = "http://books.toscrape.com/catalogue/scott-pilgrims-precious-little-life-scott-pilgrim-1_987/index.html"
+"""url_book = "http://books.toscrape.com/catalogue/scott-pilgrims-precious-little-life-scott-pilgrim-1_987/index.html"
 url_book3 = "http://books.toscrape.com/catalogue/robin-war_730/index.html"
 url_book2 = "http://books.toscrape.com/catalogue/so-cute-it-hurts-vol-6-so-cute-it-hurts-6_734/index.html"
-url_category = "http://books.toscrape.com/catalogue/category/books/sequential-art_5/index.html"
+url_category = "http://books.toscrape.com/catalogue/category/books/sequential-art_5/index.html"""
 url_catalogue = "http://books.toscrape.com/catalogue/category/books/"
+
+"""try:
+    resp = requests.get(url)
+    resp.raise_for_status()
+except requests.exceptions.HTTPError as err:
+    print(err)"""
 
 #Création d'un objet soup
 def create_soup (url):
+    print ("Creation du soup pour cet url",url)
+    try:
+        reponse = requests.get(url)
+        print ("ouais ouais ouais")
+        reponse.raise_for_status()
+    except requests.exceptions.ConnectionError as err:
+        print ("nan nan nan")
+        print (err)
+        sys.exit()
     reponse = requests.get(url)
+    print ("Voici le type de reponse:", type(reponse))
+    print("Voici la reponse: ",reponse)
+    if reponse.status_code == 200:
+        print ("200 mon gars")
+    else :
+        sys.exit()
     page = reponse.content
     soup = BeautifulSoup(page, "html.parser")
     return soup
+
+create_soup(url_site)
 
 #Récupération des infos d'un livre
 def get_info_book (url):
@@ -87,8 +113,10 @@ def get_info_book (url):
     info_book.append(description_livre) # description du livre
 
     print ("extraction du livre ",titre_livre," terminée !")
-    titre_livre = titre_livre.replace(":"," ").replace("/"," ").replace('\''," ").replace('"'," ")
-    urllib.request.urlretrieve(url_image, r'imagesbooks/'+str(titre_livre)+".jpg") # CHECKER CA BIEN !!!!!!!!!!!!
+
+    #titre_livre = titre_livre.replace(":"," ").replace("/"," ").replace('\''," ").replace('"'," ")
+    image_file_name = titlebook_to_filename(titre_livre)
+    urllib.request.urlretrieve(url_image, r'imagesbooks/'+str(image_file_name)+".jpg") # CHECKER CA BIEN !!!!!!!!!!!!
     #print("\n*************** Fin de récupération des infos du livre ********************\n")
 
     return info_book
@@ -129,7 +157,7 @@ def get_multiple_url_pages (urlcategory):
     print ("\n *************** RECUPERATION DE MULTIPLE URL PAGES ************ \n")
     multiplepage_url = [urlcategory]
     soup = create_soup(urlcategory)
-    url_category_splitted = url_category.split("/")
+    url_category_splitted = urlcategory.split("/")
     while soup.find(class_="next"):
         next_page_url = soup.find(class_="next").find(href=True)
         #new_page_url = urlcategory[:68]+next_page_url['href']
@@ -238,10 +266,17 @@ def createDirectories ():
     else:
         print("Le reportoire 'csvbooks' existe déjà.")
 
-def etl():
+#Changement du nom du livre pour qu'il soit valide dans le téléchargement de l'image
+def titlebook_to_filename(titlebook):
+    valid_chars = "-_.() %s%s" % (string.ascii_letters, string.digits)
+    filename = ''.join(c for c in titlebook if c in valid_chars)
+    filename = filename.replace(' ','_')
+    return filename
+
+def main():
     print ("Démarrage du programme : ETL de tous les livres du site")
     createDirectories()
-    links_categories = get_links_categories(url_site);
+    links_categories = get_links_categories(url_site)
 
     for link in links_categories:
         list_url, name_category = get_url_category_books(link)
@@ -260,5 +295,5 @@ def etl():
 print ("Démarrage du programme ...")
 start_time = time.time()
 print("--- %s seconds ---" % (time.time() - start_time))
-etl()
+#main()
 print ("Fin du programme.")
