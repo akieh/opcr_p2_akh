@@ -11,12 +11,12 @@ from bs4 import BeautifulSoup
 
 ## objet à manier
 url_site = "http://books.toscrape.com/"
-url_book = "http://books.toscrape.com/catalogue/we-are-robin-vol-1-the-vigilante-business-we-are-robin-1_778/index.html"
+#url_book = "http://books.toscrape.com/catalogue/we-are-robin-vol-1-the-vigilante-business-we-are-robin-1_778/index.html"
 url_catalogue = "http://books.toscrape.com/catalogue/category/books/"
 
 #Création d'un objet soup
 def create_soup (url):
-    print ("Creation du soup pour cet url",url)
+    #print ("Creation du soup pour cet url",url)
     reponse = requests.get(url)
     if reponse.ok:
         page = reponse.content
@@ -154,8 +154,6 @@ def get_links_categories (url_site):
     url_categories.pop(0)
     for url in url_categories:
         links_categories.append(url_site+ url['href'])
-    for url in enumerate (links_categories):
-        print (url)
     return links_categories
 
 #Chargement dans un fichier CSV des informations d'un livre
@@ -187,7 +185,7 @@ def load_multiple_books (list_books, name_category):
     fichier_csv = open('csvbooks/' + str(name_category)+'.csv','w', encoding="utf-8")
     ## header pour le excel
     en_tete = ["Product Page URL", "UPC", "Title", "Price including tax", "Price excluding tax", "Number available",
-               "Product description", "Category", "Review_rating", "Image URL"]
+               "Product description","Category", "Review_rating", "Image URL"]
     writer = csv.writer(fichier_csv, delimiter=',')
     writer.writerow(en_tete)
     for book in (list_books):
@@ -198,17 +196,12 @@ def load_multiple_books (list_books, name_category):
 
 #Récupération des infos de tous les livres d'une catégorie
 def get_category_info_books (url_liste):
-    print ("\n *************** Extraction des infos de tous les livres d'une catégorie ******************** \n")
+    print ("\n *************** Extraction des infos de tous les livres de la catégorie en cours ... ******************** \n")
     info_category_books = []
     for url in url_liste:
-        print("Ca boucle pour récupérer les infos d'un livre...")
         new_book = get_info_book(url)
         info_category_books.append(new_book)
-        #one_load_book_csv(new_book)
-    print ("\n *************** Extraction des infos de tous les livres d'une catégorie TERMINEE ******************** \n")
-
-    for info in (info_category_books):
-        print (info)
+    print ("\n *************** Extraction des infos de tous les livres de la catégorie TERMINEE ******************** \n")
     return info_category_books
 
 #Creation des repertoires pour les images et les CSV
@@ -246,15 +239,9 @@ def main():
     print ("Fin du programme : Tous les livres ont été chargés en CSV !")
 
 
-#loadBooksCSV(johnny)
-#johnny = get_info_book (url_book)
-
-#url_category = get_single_page_category_books(url_category)
-#print (url_category)
-#get_single_page_category_books(url_category)
 print ("Démarrage du programme ...")
 start_time = time.time()
 print("--- %s seconds ---" % (time.time() - start_time))
 
-#main()
+main()
 print ("Fin du programme.")
