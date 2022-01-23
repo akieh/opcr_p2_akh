@@ -8,10 +8,7 @@ import string
 
 from bs4 import BeautifulSoup
 
-## objet à manier
 url_site = "http://books.toscrape.com/"
-#url_book = "http://books.toscrape.com/catalogue/we-are-robin-vol-1-the-vigilante-business-we-are-robin-1_778/index.html"
-url_catalogue = "http://books.toscrape.com/catalogue/category/books/"
 
 #Création d'un objet soup
 def create_soup (url):
@@ -23,8 +20,6 @@ def create_soup (url):
     else:
         print (reponse.raise_for_status())
     return soup
-
-#create_soup(url_site)
 
 #Récupération des infos d'un livre
 def get_info_book (url):
@@ -95,30 +90,24 @@ def get_info_book (url):
 
 ##Récupération des URL des livre d'une catégorie
 def get_url_category_books (url_liste):
-    print ("\n *************** Extraction DES URL DE CHAQUE LIVRES DE LA CATEGORIE ******************** \n")
-    #print (f"\n *************** Extraction de l'url {url_liste} ******************** \n")
     url_category_books = []
     multiple_url_pages = []
     soup = create_soup(url_liste)
     name_category = soup.find(class_="page-header action")
     name_category = name_category.find("h1").text
-    print ("Nom de la categorie: ",name_category)
+    print ("\nRécupération des URL des livres de la categorie: ",name_category)
     if soup.find(class_="next"):
         multiple_url_pages = get_multiple_url_pages(url_liste)
     if len(multiple_url_pages) == 0:
         multiple_url_pages.append(url_liste)
-    print("Ca boucle pour récupérer les url de tous les livres ...")
     for url in multiple_url_pages:
         url_category_books.extend(get_single_page_category_books(url))
-    print ("Boucle terminée !")
-    #print ("Voici le contenu de all_url_category_books:", url_category_books)
-    #print ("\n *************** EXTRACTION DES URL DES LIVRES TERMINEE ************ \n")
+    print ("Récupération des URL de tous les livres terminées !")
 
     return url_category_books, name_category
 
 #Récupération des URL de plusieurs pages d'une catégorie
 def get_multiple_url_pages (urlcategory):
-    #print ("\n *************** RECUPERATION DE MULTIPLE URL PAGES ************ \n")
     multiplepage_url = [urlcategory]
     soup = create_soup(urlcategory)
     url_category_splitted = urlcategory.split("/")
@@ -128,12 +117,10 @@ def get_multiple_url_pages (urlcategory):
         new_page_url = urlcategory[:51] + url_category_splitted[-2]+ "/" + next_page_url['href']
         multiplepage_url.append(new_page_url)
         soup = create_soup(new_page_url)
-    #print("\n *************** RECUPERATION DES URL DE PLUSIEURS PAGES TERMINEE ************ \n")
     return multiplepage_url
 
 #Récupération des URL des livres d'une page
 def get_single_page_category_books (url):
-    #print ("\n *************** RECUPERATION URL DES LIVRES ************ \n")
     soup = create_soup(url)
     table_books = soup.find("ol", class_="row")
     url_all_books_category = table_books.find_all(href=True)
@@ -141,10 +128,9 @@ def get_single_page_category_books (url):
     for url in url_all_books_category:
         url_all_books.append(url_site + "catalogue/" + url['href'][9:])
     url_all_books = list(dict.fromkeys(url_all_books))
-    #print ("Affichage URL des livres: ", url_all_books)
-    #print ("\n *************** RECUPERATION URL DES LIVRES TERMINEE ************ \n")
     return url_all_books
 
+#Récupération des URL de toutes les catégories
 def get_links_categories (url_site):
     links_categories = []
     soup = create_soup (url_site)
@@ -154,30 +140,6 @@ def get_links_categories (url_site):
     for url in url_categories:
         links_categories.append(url_site+ url['href'])
     return links_categories
-
-#Chargement dans un fichier CSV des informations d'un livre
-def load_book_csv (info_book):
-    print ("\n \n \n *************** Ecriture des infos du livre dans le fichier CSV ******************** \n \n \n")
-    with open('csvbooks/book.csv', 'a',encoding="utf-8") as fichier_csv:
-
-        print("Chargement des données du livre dans un fichier en cours ...")
-        writer = csv.writer(fichier_csv, delimiter=',')
-        writer.writerow(info_book)
-        print("Ecriture des données du livre terminée.")
-
-def one_load_book_csv (info_book):
-    print ("\n \n \n *************** LOADING BOOKS INFO IN CSV ******************** \n \n \n")
-    with open('csvbooks/book.csv', 'w') as fichier_csv:
-        ## header pour le excel
-        en_tete = ["Product Page URL", "UPC", "Title", "Price including tax", "Price excluding tax", "Number available",
-                   "Product description",
-                   ]
-        ## "Category", "Review_rating", "Image URL"] à ajouter après Product description
-        writer = csv.writer(fichier_csv, delimiter=',')
-        writer.writerow(en_tete)
-        print("Chargement des données du livre dans un fichier en cours ...")
-        writer.writerow(info_book)
-        print("Terminé.")
 
 def load_multiple_books (list_books, name_category):
     print (f"\n *************** Ecriture des livres de la catégorie {name_category} en CSV ******************** \n")
@@ -195,12 +157,12 @@ def load_multiple_books (list_books, name_category):
 
 #Récupération des infos de tous les livres d'une catégorie
 def get_category_info_books (url_liste):
-    print ("\n *************** Extraction des infos de tous les livres de la catégorie en cours ... ******************** \n")
+    print ("\nExtraction des infos de tous les livres de la catégorie en cours ... ")
     info_category_books = []
     for url in url_liste:
         new_book = get_info_book(url)
         info_category_books.append(new_book)
-    print ("\n *************** Extraction des infos de tous les livres de la catégorie TERMINEE ******************** \n")
+    print ("Extraction des infos de tous les livres de la catégorie TERMINEE !\n")
     return info_category_books
 
 #Creation des repertoires pour les images et les CSV
@@ -227,20 +189,16 @@ def titlebook_to_filename(titlebook):
 
 def main():
     print ("Démarrage du programme : ETL de tous les livres du site")
+    start_time = time.time()
     createDirectories()
-    links_categories = get_links_categories(url_site)
+    links_categories = get_links_categories(url_site) #Récupération des URL des catégories
 
     for link in links_categories:
-        list_url, name_category = get_url_category_books(link)
-        list_books = get_category_info_books(list_url)
-        load_multiple_books(list_books, name_category)
+        list_url, name_category = get_url_category_books(link) #Récupération des URL de tous les livres d'une catégorie
+        list_books = get_category_info_books(list_url) #Extraction et Transformation des infos des livres d'une catégorie
+        load_multiple_books(list_books, name_category) #Chargement en CSV des infos des livres d'une catégorie
 
     print ("Fin du programme : Tous les livres ont été chargés en CSV !")
-
-
-print ("Démarrage du programme ...")
-start_time = time.time()
-print("--- %s seconds ---" % (time.time() - start_time))
+    print("--- %s seconds ---" % (time.time() - start_time))
 
 main()
-print ("Fin du programme.")
